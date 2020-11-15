@@ -4,10 +4,16 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = 'redfestival'
 
+def sort(list):
+    table = {}
 
-def getting_name(x):
-    x = x.rstrip('<').rstrip('>')
-    print(x)
+    for users in list:
+        table[users.username] = users.score
+
+    sorted_table = {k: v for k, v in sorted(table.items(), key=lambda item: item[1], reverse=True)}
+    print(sorted_table)
+
+    return sorted_table
 
 
 @app.before_request
@@ -29,26 +35,22 @@ class Todo(db.Model):
     complete = db.Column(db.Boolean)
     posted_by = db.Column(db.String(50))
 
-
-# class Users(db.Model):
-# id = db.Column(db.Integer, primary_key=True)
-# username = db.Column(db.String(50), unique=True, nullable=False)
-# password = db.Column(db.String(120), unique=True, nullable=False)
-
 class User:
-    def __init__(self, id, username, password):
+    def __init__(self, id, username, password, score):
         self.id = id
         self.username = username
         self.password = password
+        self.score = score
 
     def __repr__(self):
         return f'<User: {self.username}>'
 
 
-users = [User(id=1, username='mac', password='password'), User(id=2, username='jisoo', password='blackandpink'),
-         User(id=3, username='johnny', password='kickit')]
+users = [User(id=1, username='Mac', password='password', score=0), User(id=2, username='Jisoo', password='password',score=0),
+         User(id=3, username='Johnny', password='password', score=0)]
 
 print(users[1].id)
+sort(users)
 
 
 @app.route('/')
@@ -58,8 +60,9 @@ def index():
 
     incomplete = Todo.query.filter_by(complete=False).filter_by(posted_by=g.user.username).all()
     completed = Todo.query.filter_by(complete=True).filter_by(posted_by=g.user.username).all()
-
-    return render_template('index.html', incomplete=incomplete, complete=completed)
+    sorted_list = sort(users)
+    print(sorted_list)
+    return render_template('index.html', incomplete=incomplete, complete=completed, sorted_list=sorted_list)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -93,6 +96,7 @@ def add():
 def complete(id):
     todo = Todo.query.filter_by(id=int(id)).first()
     todo.complete = True
+    g.user.score += 1
     db.session.commit()
 
     return redirect(url_for('index'))
