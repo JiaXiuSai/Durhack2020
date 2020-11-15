@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h2 style="margin:5px; font-size:30px;">To Do List</h2>
+      <form action="{{ url_for('add') }}" method="POST">
+        <input type="text" name="todoitem">
+        <input class="addBtn" type="submit" value="Add Item" />
+      </form>
+    </div>
+    <div class="todo">
+        <ul id="myUL">
+            {% for todo in incomplete %}
+            <li><a href="{{ url_for('complete', id=todo.id) }}" class="button" id="complete">✓</a>{{ todo.text }}</li>
+            {% endfor %}    
+        </ul>
+    </div>
+    <script src="/static/script.js"></script>
+  </body>
+</html>
